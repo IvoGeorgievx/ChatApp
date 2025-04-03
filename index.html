@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Socket.io Test</title>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const socket = io('http://localhost:3005');
+
+    socket.on('connect', () => {
+      console.log('Connected!', socket.id);
+      document.getElementById('status').textContent = 'Connected: ' + socket.id;
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+      document.getElementById('status').textContent = 'Error: ' + error;
+    });
+
+    socket.on('user joined', (data) => {
+      console.log('User joined:', data);
+      document.getElementById('events').innerHTML += '<p>User joined: ' +
+        JSON.stringify(data) + '</p>';
+    });
+
+    function sendMessage() {
+      const message = document.getElementById('message').value;
+      socket.emit('createChat', { text: message });
+      console.log('Sent message:', message);
+    }
+  </script>
+</head>
+
+<body>
+  <h1>Socket.io Tester</h1>
+  <div id="status">Connecting...</div>
+  <br>
+  <input id="message" placeholder="Type a message">
+  <button onclick="sendMessage()">Send</button>
+  <div id="events"></div>
+</body>
+
+</html>
