@@ -1,0 +1,43 @@
+<div class="chat-container">
+  <div class="connection-panel" *ngIf="connectionStatus() !== 'connected'">
+    <h3>Connect to Chat</h3>
+    <form [formGroup]="connectionForm" (ngSubmit)="connect()">
+      <div class="form-group">
+        <label for="serverUrl">Server URL:</label>
+        <input type="text" id="serverUrl" formControlName="serverUrl">
+      </div>
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" formControlName="username">
+      </div>
+      <button type="submit" [disabled]="connectionForm.invalid || connectionStatus() === 'connecting'">
+        {{ connectionStatus() === 'connecting' ? 'Connecting...' : 'Connect' }}
+      </button>
+    </form>
+  </div>
+
+  <div class="chat-panel" *ngIf="connectionStatus() === 'connected'">
+    <div class="header">
+      <h3>Chat as: {{ username() }}</h3>
+      <button (click)="disconnect()">Disconnect</button>
+    </div>
+
+    <div class="messages-container">
+      @for (msg of messages(); track msg) {
+      <div class="message">
+        {{ msg.message }}
+        <small *ngIf="msg.timestamp">{{ msg.timestamp | date:'short' }}</small>
+      </div>
+      } @empty {
+      <div class="no-messages">No messages yet. Start the conversation!</div>
+      }
+    </div>
+
+    <form [formGroup]="messageForm" (ngSubmit)="sendMessage()">
+      <div class="input-group">
+        <input type="text" formControlName="message" placeholder="Type a message...">
+        <button type="submit" [disabled]="messageForm.invalid">Send</button>
+      </div>
+    </form>
+  </div>
+</div>

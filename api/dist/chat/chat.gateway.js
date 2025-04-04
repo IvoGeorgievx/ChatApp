@@ -13,12 +13,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatGateway = void 0;
+const common_1 = require("@nestjs/common");
 const websockets_1 = require("@nestjs/websockets");
+const socket_io_1 = require("socket.io");
 const chat_service_1 = require("./chat.service");
 const create_chat_dto_1 = require("./dto/create-chat.dto");
 const update_chat_dto_1 = require("./dto/update-chat.dto");
-const socket_io_1 = require("socket.io");
-const common_1 = require("@nestjs/common");
 let ChatGateway = class ChatGateway {
     constructor(chatService) {
         this.chatService = chatService;
@@ -29,18 +29,20 @@ let ChatGateway = class ChatGateway {
     }
     handleConnection(client) {
         this.logger.log(`Client connected: ${client.id}`);
-        this.server.emit('user joined', {
-            message: `new client with id: ${client.id} just joined the chat`,
+        client.broadcast.emit('user-joined', {
+            message: `new user with id: ${client.id} just joined the chat `,
         });
     }
     handleDisconnect(client) {
         this.logger.log(`Client disconnected: ${client.id}`);
+        this.server.emit('user-left', {
+            message: `user with id ${client.id} left the chat`,
+        });
     }
-    create(body, client) {
-        console.log(body);
+    create(client, message) {
+        console.log(message);
         client.emit('reply', 'this is a reply');
-        this.server.emit('message', body);
-        return this.chatService.create(body);
+        this.server.emit('reply', message);
     }
     findAll() {
         return this.chatService.findAll();
@@ -61,11 +63,9 @@ __decorate([
     __metadata("design:type", socket_io_1.Server)
 ], ChatGateway.prototype, "server", void 0);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('createChat'),
-    (0, common_1.UsePipes)(new common_1.ValidationPipe({ whitelist: true })),
-    __param(0, (0, websockets_1.MessageBody)()),
+    (0, websockets_1.SubscribeMessage)('newMessage'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_chat_dto_1.CreateChatDto, socket_io_1.Socket]),
+    __metadata("design:paramtypes", [socket_io_1.Socket, create_chat_dto_1.CreateChatDto]),
     __metadata("design:returntype", void 0)
 ], ChatGateway.prototype, "create", null);
 __decorate([

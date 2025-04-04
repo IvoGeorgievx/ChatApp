@@ -1,17 +1,17 @@
+import { Logger } from '@nestjs/common';
 import {
-  WebSocketGateway,
-  SubscribeMessage,
   MessageBody,
-  OnGatewayInit,
-  WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
-import { Server, Socket } from 'socket.io';
-import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -24,6 +24,7 @@ export class ChatGateway
   constructor(private readonly chatService: ChatService) {}
 
   @WebSocketServer() server: Server;
+
   private logger = new Logger('ChatGateway');
 
   afterInit() {
@@ -32,22 +33,28 @@ export class ChatGateway
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
-    this.server.emit('user joined', {
-      message: `new client with id: ${client.id} just joined the chat`,
+    client.broadcast.emit('user-joined', {
+      message: `new user with id: ${client.id} just joined the chat `,
     });
+    // this.server.emit('user-joined', {
+    //   message: `new user with id: ${client.id} just joined the chat`,
+    // });
   }
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+    this.server.emit('user-left', {
+      message: `user with id ${client.id} left the chat`,
+    });
   }
 
-  @SubscribeMessage('createChat')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  create(@MessageBody() body: CreateChatDto, client: Socket) {
-    console.log(body);
+  @SubscribeMessage('newMessage')
+  // @UsePipes(new ValidationPipe({ whitelist: true }))
+  create(client: Socket, message: CreateChatDto) {
+    console.log(message);
     client.emit('reply', 'this is a reply');
-    this.server.emit('message', body);
-    return this.chatService.create(body);
+    this.server.emit('reply', message);
+    // client.broadcast.emit('newMessage', message);
   }
 
   @SubscribeMessage('findAllChat')

@@ -1,8 +1,8 @@
-import { OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
-import { Server, Socket } from 'socket.io';
 export declare class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     private readonly chatService;
     constructor(chatService: ChatService);
@@ -11,7 +11,7 @@ export declare class ChatGateway implements OnGatewayInit, OnGatewayConnection, 
     afterInit(): void;
     handleConnection(client: Socket): void;
     handleDisconnect(client: Socket): void;
-    create(body: CreateChatDto, client: Socket): string;
+    create(client: Socket, message: CreateChatDto): void;
     findAll(): string;
     findOne(id: number): string;
     update(updateChatDto: UpdateChatDto): string;
