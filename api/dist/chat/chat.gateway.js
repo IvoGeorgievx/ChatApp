@@ -8,9 +8,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatGateway = void 0;
 const common_1 = require("@nestjs/common");
@@ -18,7 +15,6 @@ const websockets_1 = require("@nestjs/websockets");
 const socket_io_1 = require("socket.io");
 const chat_service_1 = require("./chat.service");
 const create_chat_dto_1 = require("./dto/create-chat.dto");
-const update_chat_dto_1 = require("./dto/update-chat.dto");
 let ChatGateway = class ChatGateway {
     constructor(chatService) {
         this.chatService = chatService;
@@ -29,9 +25,13 @@ let ChatGateway = class ChatGateway {
     }
     handleConnection(client) {
         this.logger.log(`Client connected: ${client.id}`);
+        const rooms = ['1', '2'];
+        const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
         client.broadcast.emit('user-joined', {
-            message: `new user with id: ${client.id} just joined the chat `,
+            message: `new user with id: ${client.id} just joined the chat at room ${randomRoom}`,
         });
+        client.join(randomRoom);
+        this.logger.log(`Client ${client.id} joined room ${randomRoom}`);
     }
     handleDisconnect(client) {
         this.logger.log(`Client disconnected: ${client.id}`);
@@ -40,21 +40,15 @@ let ChatGateway = class ChatGateway {
         });
     }
     create(client, message) {
-        console.log(message);
-        client.emit('reply', 'this is a reply');
-        this.server.emit('reply', message);
-    }
-    findAll() {
-        return this.chatService.findAll();
-    }
-    findOne(id) {
-        return this.chatService.findOne(id);
-    }
-    update(updateChatDto) {
-        return this.chatService.update(updateChatDto.id, updateChatDto);
-    }
-    remove(id) {
-        return this.chatService.remove(id);
+        const rooms = Array.from(client.rooms).filter((room) => room !== client.id);
+        if (rooms.length > 0) {
+            const room = rooms[0];
+            this.server.to(room).emit('reply', message);
+            this.logger.log(`Message sent to room ${room}: ${JSON.stringify(message)}`);
+        }
+        else {
+            this.logger.warn(`Client ${client.id} is not in any room`);
+        }
     }
 };
 exports.ChatGateway = ChatGateway;
@@ -68,33 +62,6 @@ __decorate([
     __metadata("design:paramtypes", [socket_io_1.Socket, create_chat_dto_1.CreateChatDto]),
     __metadata("design:returntype", void 0)
 ], ChatGateway.prototype, "create", null);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('findAllChat'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
-], ChatGateway.prototype, "findAll", null);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('findOneChat'),
-    __param(0, (0, websockets_1.MessageBody)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", void 0)
-], ChatGateway.prototype, "findOne", null);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('updateChat'),
-    __param(0, (0, websockets_1.MessageBody)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [update_chat_dto_1.UpdateChatDto]),
-    __metadata("design:returntype", void 0)
-], ChatGateway.prototype, "update", null);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('removeChat'),
-    __param(0, (0, websockets_1.MessageBody)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", void 0)
-], ChatGateway.prototype, "remove", null);
 exports.ChatGateway = ChatGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {

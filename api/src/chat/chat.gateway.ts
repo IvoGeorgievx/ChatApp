@@ -1,6 +1,5 @@
 import { Logger } from '@nestjs/common';
 import {
-  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -11,7 +10,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
-import { UpdateChatDto } from './dto/update-chat.dto';
 
 @WebSocketGateway({
   cors: {
@@ -33,12 +31,18 @@ export class ChatGateway
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
+
+    const rooms = ['1', '2'];
+
+    const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+
     client.broadcast.emit('user-joined', {
-      message: `new user with id: ${client.id} just joined the chat `,
+      message: `new user with id: ${client.id} just joined the chat at room ${randomRoom}`,
     });
-    // this.server.emit('user-joined', {
-    //   message: `new user with id: ${client.id} just joined the chat`,
-    // });
+
+    client.join(randomRoom);
+
+    this.logger.log(`Client ${client.id} joined room ${randomRoom}`);
   }
 
   handleDisconnect(client: Socket) {
@@ -49,31 +53,17 @@ export class ChatGateway
   }
 
   @SubscribeMessage('newMessage')
-  // @UsePipes(new ValidationPipe({ whitelist: true }))
   create(client: Socket, message: CreateChatDto) {
-    console.log(message);
-    client.emit('reply', 'this is a reply');
-    this.server.emit('reply', message);
-    // client.broadcast.emit('newMessage', message);
-  }
+    const rooms = Array.from(client.rooms).filter((room) => room !== client.id);
 
-  @SubscribeMessage('findAllChat')
-  findAll() {
-    return this.chatService.findAll();
-  }
-
-  @SubscribeMessage('findOneChat')
-  findOne(@MessageBody() id: number) {
-    return this.chatService.findOne(id);
-  }
-
-  @SubscribeMessage('updateChat')
-  update(@MessageBody() updateChatDto: UpdateChatDto) {
-    return this.chatService.update(updateChatDto.id, updateChatDto);
-  }
-
-  @SubscribeMessage('removeChat')
-  remove(@MessageBody() id: number) {
-    return this.chatService.remove(id);
+    if (rooms.length > 0) {
+      const room = rooms[0];
+      this.server.to(room).emit('reply', message);
+      this.logger.log(
+        `Message sent to room ${room}: ${JSON.stringify(message)}`,
+      );
+    } else {
+      this.logger.warn(`Client ${client.id} is not in any room`);
+    }
   }
 }
