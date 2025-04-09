@@ -9,6 +9,5 @@ export const dataSource = new DataSource({
   database: 'chatappdb1',
   entities: [__dirname + '/../../modules/**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../../migrations/*{.ts,.js}'],
-
-  synchronize: true,
+  synchronize: false,
 });
