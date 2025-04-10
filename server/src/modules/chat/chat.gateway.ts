@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import {
   MessageBody,
   OnGatewayConnection,
@@ -10,12 +10,14 @@ import {
 import { Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { ChatRoomDto, chatRoomSchema } from './dto/chat-room.dto';
+import { AuthGuard } from 'src/core/guards/auth.guard';
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
+@UseGuards(AuthGuard)
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
