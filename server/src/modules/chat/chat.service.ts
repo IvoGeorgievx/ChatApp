@@ -4,6 +4,8 @@ import { User } from '../user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { ChatRoom } from './entity/chat-room.entity';
 import { ChatRoomDto } from './dto/chat-room.dto';
+import { Message } from './entity/message.entity';
+import { CreateMessageDto } from './dto/message.dto';
 
 @Injectable()
 export class ChatService {
@@ -11,6 +13,8 @@ export class ChatService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     @InjectRepository(ChatRoom)
     private readonly chatRoomRepo: Repository<ChatRoom>,
+    @InjectRepository(Message)
+    private readonly messageRepo: Repository<Message>,
   ) {}
 
   async createRoom(body: ChatRoomDto): Promise<ChatRoom> {
@@ -24,5 +28,41 @@ export class ChatService {
       console.error('Error during save:', error);
       throw new BadRequestException(error);
     }
+  }
+
+  async newMessage(body: CreateMessageDto): Promise<Message> {
+    const { roomId, content } = body;
+
+    const chatRoom = await this.chatRoomRepo.findOne({ where: { id: roomId } });
+    if (!chatRoom) {
+      throw new BadRequestException('Chat room not found');
+    }
+
+    const newMessage = this.messageRepo.create({
+      content,
+      chatRoom,
+    });
+
+    try {
+      return await this.messageRepo.save(newMessage);
+    } catch (err) {
+      console.log('error bro');
+      throw new Error(err);
+      // emit smt
+    }
+  }
+
+  async findRoomById(roomId: string): Promise<ChatRoom> {
+    const room = await this.chatRoomRepo.findOne({
+      where: {
+        id: roomId,
+      },
+    });
+
+    if (!room) {
+      throw new BadRequestException('Chat room not found');
+    }
+
+    return room;
   }
 }

@@ -37,7 +37,7 @@ export class AuthGuard implements CanActivate {
         return true;
       } catch {
         client.emit('auth_error', {
-          message: 'Auth token is not valid or missing',
+          message: 'Auth token is not valid or missing2',
         });
 
         return false;

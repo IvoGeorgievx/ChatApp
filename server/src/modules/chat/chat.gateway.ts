@@ -1,5 +1,6 @@
 import { Logger, UseGuards } from '@nestjs/common';
 import {
+  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -7,44 +8,87 @@ import {
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
-import { Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { ChatRoomDto, chatRoomSchema } from './dto/chat-room.dto';
 import { AuthGuard } from 'src/core/guards/auth.guard';
+import { CreateMessageDto, messageSchema } from './dto/message.dto';
+import { Client } from 'socket.io/dist/client';
+import { JwtService } from '@nestjs/jwt';
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
-@UseGuards(AuthGuard)
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly jwtService: JwtService,
+  ) {}
   private logger = new Logger('WebSocket');
   socket: Socket;
+  server: Server;
 
-  afterInit() {
+  afterInit(server: Server) {
+    this.server = server;
     this.logger.log('WebSocket server initialized');
   }
 
   handleConnection(client: Socket) {
-    this.logger.log(`client connected: ${client.id}`);
+    const token = client.handshake.headers['authorization']?.split(' ')[1];
+    if (!token) return;
+    const user = this.jwtService.verify<{ sub: string; username: string }>(
+      token,
+    );
+    if (user) {
+      client.data = { userId: user.sub, username: user.username };
+      this.logger.log(`User ${user.sub} connected with socket ID ${client.id}`);
+    } else {
+      client.disconnect();
+      this.logger.warn('Invalid token, client disconnected');
+    }
   }
 
   handleDisconnect(client: Socket) {
     this.logger.log(`client disconnected: ${client.id}`);
   }
 
+  @UseGuards(AuthGuard)
   @SubscribeMessage('newRoom')
   createRoom(@MessageBody() body: ChatRoomDto) {
     const parsed = chatRoomSchema.safeParse(body);
 
     if (!parsed.success) {
       this.logger.error('Invalid chat room data', parsed.error.errors);
-      throw new Error('Invalid chat room data');
+      // emit something for the error
+      return;
     }
     return this.chatService.createRoom(parsed.data);
+  }
+
+  @UseGuards(AuthGuard)
+  @SubscribeMessage('joinRoom')
+  async joinRoom(
+    @MessageBody() data: { roomId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const room = await this.chatService.findRoomById(data.roomId);
+    await client.join(room.id);
+    this.logger.log(`Client ${client.id} joined room ${room.id}`);
+  }
+
+  @UseGuards(AuthGuard)
+  @SubscribeMessage('newMessage')
+  async receiveMessage(@MessageBody() body: CreateMessageDto) {
+    const parsed = messageSchema.safeParse(body);
+    if (!parsed.success) {
+      this.logger.error('Invalid message data', parsed.error.errors);
+      //same
+    }
+    const message = await this.chatService.newMessage(body);
+    this.server.to(message.chatRoom.id).emit('message', message.content);
   }
 }

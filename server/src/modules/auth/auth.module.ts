@@ -10,7 +10,7 @@ import { AuthGuard } from 'src/core/guards/auth.guard';
   imports: [
     TypeOrmModule.forFeature([User]),
     JwtModule.register({
-      secret: 'big_sercret',
+      secret: 'big_secret',
       signOptions: { expiresIn: '1d' },
     }),
   ],
