@@ -1,0 +1,13 @@
+$primary-color: #1b5e20;
+$secondary-color: #4a148c;
+$background-color: #121212;
+$accent-color: #ff6f00;
+$font-size-base: 16px;
+
+:root {
+  --primary-color: #{$primary-color};
+  --secondary-color: #{$secondary-color};
+  --background-color: #{$background-color};
+  --accent-color: #{$accent-color};
+  --font-size-base: #{$font-size-base};
+}

@@ -1,0 +1,124 @@
+<div class="register-page">
+  <div class="register-container">
+    <div class="form-header">
+      <div class="logo">
+        <span class="logo-icon">
+          <i class="material-icons">chat</i>
+        </span>
+        <h1 class="logo-text">ChatApp</h1>
+      </div>
+      <h2 class="title">Create an Account</h2>
+      <p class="subtitle">Join our community and start chatting in real-time</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+      <div class="form-group" [class.focused]="focusedField === 'username'"
+        [class.has-value]="registerForm.get('username')?.value">
+        <label for="username">
+          <i class="material-icons">person</i>
+          <span>Username</span>
+        </label>
+        <input id="username" formControlName="username" type="text" (focus)="onFocusField('username')"
+          (blur)="onBlurField()" />
+        <div class="input-underline">
+          <span class="input-ripple"></span>
+        </div>
+        @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+        <div class="error-message">
+          <i class="material-icons">error_outline</i>
+          Username is required and must be at least 3 characters.
+        </div>
+        }
+      </div>
+
+      <div class="form-group" [class.focused]="focusedField === 'password'"
+        [class.has-value]="registerForm.get('password')?.value">
+        <label for="password">
+          <i class="material-icons">lock</i>
+          <span>Password</span>
+        </label>
+        <div class="password-input-wrapper">
+          <input id="password" formControlName="password" [type]="showPassword ? 'text' : 'password'"
+            (focus)="onFocusField('password')" (blur)="onBlurField()" />
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility()"
+            (mousedown)="$event.preventDefault()">
+            <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
+          </button>
+        </div>
+        <div class="input-underline">
+          <span class="input-ripple"></span>
+        </div>
+        @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+        <div class="error-message">
+          <i class="material-icons">error_outline</i>
+          Password is required and must be at least 6 characters.
+        </div>
+        }
+      </div>
+
+      <div class="form-group" [class.focused]="focusedField === 'confirmPassword'"
+        [class.has-value]="registerForm.get('confirmPassword')?.value">
+        <label for="confirmPassword">
+          <i class="material-icons">lock_outline</i>
+          <span>Confirm Password</span>
+        </label>
+        <div class="password-input-wrapper">
+          <input id="confirmPassword" formControlName="confirmPassword"
+            [type]="showConfirmPassword ? 'text' : 'password'" (focus)="onFocusField('confirmPassword')"
+            (blur)="onBlurField()" />
+          <button type="button" class="toggle-password" (click)="toggleConfirmPasswordVisibility()"
+            (mousedown)="$event.preventDefault()">
+            <i class="material-icons">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</i>
+          </button>
+        </div>
+        <div class="input-underline">
+          <span class="input-ripple"></span>
+        </div>
+        @if (registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) {
+        <div class="error-message">
+          <i class="material-icons">error_outline</i>
+          Please confirm your password.
+        </div>
+        }
+        @if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
+        <div class="error-message">
+          <i class="material-icons">error_outline</i>
+          Passwords do not match.
+        </div>
+        }
+      </div>
+
+      @if (registerForm.get('password')?.value) {
+      <div class="password-strength">
+        <div class="strength-label">Password Strength:</div>
+        <div class="strength-meter">
+          <span class="strength-bar" [class.weak]="passwordStrength === 'weak'"
+            [class.medium]="passwordStrength === 'medium'" [class.strong]="passwordStrength === 'strong'"
+            [style.width]="passwordStrengthPercent + '%'"></span>
+        </div>
+        <div class="strength-text" [class]="passwordStrength">
+          {{ passwordStrength === 'weak' ? 'Weak' : (passwordStrength === 'medium' ? 'Medium' : 'Strong') }}
+        </div>
+      </div>
+      }
+
+      <div class="form-actions">
+        <button type="submit" class="submit-btn" [disabled]="registerForm.invalid || isSubmitting"
+          [class.loading]="isSubmitting">
+          <span class="btn-text">{{ isSubmitting ? 'Creating Account...' : 'Create Account' }}</span>
+          @if (isSubmitting) {
+          <span class="spinner"></span>
+          }
+        </button>
+      </div>
+
+      <div class="form-footer">
+        <p>Already have an account? <a routerLink="/login" class="login-link">Login</a></p>
+      </div>
+    </form>
+
+    <div class="decorative-element bubble-1"></div>
+    <div class="decorative-element bubble-2"></div>
+    <div class="decorative-element bubble-3"></div>
+  </div>
+</div>

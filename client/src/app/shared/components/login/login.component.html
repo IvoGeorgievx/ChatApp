@@ -1,0 +1,94 @@
+<div class="login-page">
+  <div class="login-container">
+    <div class="form-header">
+      <div class="logo">
+        <span class="logo-icon">
+          <i class="material-icons">chat</i>
+        </span>
+        <h1 class="logo-text">ChatApp</h1>
+      </div>
+      <h2 class="title">Welcome Back</h2>
+      <p class="subtitle">Log in to continue your conversations</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      @if (loginError) {
+      <div class="error-banner">
+        <i class="material-icons">error_outline</i>
+        <span>{{ loginError }}</span>
+      </div>
+      }
+
+      <div class="form-group" [class.focused]="focusedField === 'username'"
+        [class.has-value]="loginForm.get('username')?.value">
+        <label for="username">
+          <i class="material-icons">person</i>
+          <span>Username</span>
+        </label>
+        <input id="username" formControlName="username" type="text" (focus)="onFocusField('username')"
+          (blur)="onBlurField()" />
+        <div class="input-underline">
+          <span class="input-ripple"></span>
+        </div>
+        @if (loginForm.get('username')?.invalid && loginForm.get('username')?.touched) {
+        <div class="error-message">
+          <i class="material-icons">error_outline</i>
+          Username is required and must be at least 3 characters.
+        </div>
+        }
+      </div>
+
+      <div class="form-group" [class.focused]="focusedField === 'password'"
+        [class.has-value]="loginForm.get('password')?.value">
+        <label for="password">
+          <i class="material-icons">lock</i>
+          <span>Password</span>
+        </label>
+        <div class="password-input-wrapper">
+          <input id="password" formControlName="password" [type]="showPassword ? 'text' : 'password'"
+            (focus)="onFocusField('password')" (blur)="onBlurField()" />
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+            <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
+          </button>
+        </div>
+        <div class="input-underline">
+          <span class="input-ripple"></span>
+        </div>
+        @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+        <div class="error-message">
+          <i class="material-icons">error_outline</i>
+          Password is required.
+        </div>
+        }
+      </div>
+
+      <div class="login-options">
+        <div class="remember-me">
+          <div class="custom-checkbox" [class.checked]="rememberMe" (click)="toggleRememberMe()">
+            <i class="material-icons" *ngIf="rememberMe">check</i>
+          </div>
+          <label for="rememberMe" (click)="toggleRememberMe()">Remember me</label>
+        </div>
+        <a href="#" class="forgot-password">Forgot password?</a>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="submit-btn" [disabled]="loginForm.invalid || isSubmitting"
+          [class.loading]="isSubmitting">
+          <span class="btn-text">{{ isSubmitting ? 'Logging in...' : 'Log In' }}</span>
+          @if (isSubmitting) {
+          <span class="spinner"></span>
+          }
+        </button>
+      </div>
+
+      <div class="form-footer">
+        <p>Don't have an account? <a routerLink="/register" class="register-link">Sign Up</a></p>
+      </div>
+    </form>
+
+    <div class="decorative-element bubble-1"></div>
+    <div class="decorative-element bubble-2"></div>
+    <div class="decorative-element bubble-3"></div>
+  </div>
+</div>

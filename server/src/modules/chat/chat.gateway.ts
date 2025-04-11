@@ -1,4 +1,5 @@
 import { Logger, UseGuards } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
   MessageBody,
@@ -9,12 +10,10 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { AuthGuard } from 'src/core/guards/auth.guard';
 import { ChatService } from './chat.service';
 import { ChatRoomDto, chatRoomSchema } from './dto/chat-room.dto';
-import { AuthGuard } from 'src/core/guards/auth.guard';
 import { CreateMessageDto, messageSchema } from './dto/message.dto';
-import { Client } from 'socket.io/dist/client';
-import { JwtService } from '@nestjs/jwt';
 
 @WebSocketGateway({
   cors: {
@@ -45,7 +44,9 @@ export class ChatGateway
     );
     if (user) {
       client.data = { userId: user.sub, username: user.username };
-      this.logger.log(`User ${user.sub} connected with socket ID ${client.id}`);
+      this.logger.log(
+        `User ${user.sub} - ${user.username} connected with socket ID ${client.id}`,
+      );
     } else {
       client.disconnect();
       this.logger.warn('Invalid token, client disconnected');
