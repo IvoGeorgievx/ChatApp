@@ -7,6 +7,7 @@ import { Message } from './entity/message.entity';
 import { User } from '../user/entity/user.entity';
 import { AuthGuard } from 'src/core/guards/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
+import { ChatController } from './chat.controller';
 
 @Module({
   imports: [
@@ -17,5 +18,6 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
   providers: [ChatGateway, ChatService, AuthGuard],
+  controllers: [ChatController],
 })
 export class ChatModule {}

@@ -65,4 +65,8 @@ export class ChatService {
 
     return room;
   }
+
+  async getAllChatRooms(): Promise<ChatRoom[]> {
+    return await this.chatRoomRepo.find();
+  }
 }
