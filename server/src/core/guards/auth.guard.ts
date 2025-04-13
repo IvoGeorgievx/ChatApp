@@ -9,8 +9,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     if (context.getType() === 'http') {
       const request: Request = context.switchToHttp().getRequest();
-      const authorization = request.headers['authorization'];
-      const token = authorization?.split(' ')[1];
+      const token = request.cookies['accessToken'] as string | undefined;
 
       if (!token) return false;
       try {
@@ -22,9 +21,10 @@ export class AuthGuard implements CanActivate {
     }
 
     if (context.getType() === 'ws') {
+      console.log('into the ws');
       const client: Socket = context.switchToWs().getClient();
-      const headers = client.handshake.headers['authorization'];
-      const token = headers?.split(' ')[1];
+      const cookie = client.handshake.headers.cookie;
+      const token = cookie?.split('=')[1];
       if (!token) {
         client.emit('auth_error', {
           message: 'Auth token is not valid or missing',
