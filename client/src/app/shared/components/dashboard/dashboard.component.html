@@ -1,0 +1,106 @@
+<app-header />
+<div class="dashboard-container">
+  <!-- Sidebar with available chat rooms -->
+  <aside class="chat-sidebar">
+    <div class="sidebar-header">
+      <h2>Chat Rooms</h2>
+      <button class="btn-create-room">
+        <i class="material-icons">add</i>
+      </button>
+    </div>
+
+    <div class="room-search">
+      <input type="text" placeholder="Search rooms..." [(ngModel)]="roomSearchQuery">
+      <i class="material-icons search-icon">search</i>
+    </div>
+
+    <div class="rooms-list">
+      @for (room of filteredRooms; track room.id) {
+      <div class="room-item" [class.active]="selectedRoom?.id === room.id" (click)="selectRoom(room)">
+        <div class="room-avatar">
+          {{ room.name.charAt(0).toUpperCase() }}
+        </div>
+        <div class="room-info">
+          <h3 class="room-name">{{ room.name }}</h3>
+          <p class="room-last-message">{{ getLastMessage(room.id) }}</p>
+        </div>
+        <div class="room-meta">
+          <span class="room-time">{{ getLastMessageTime(room.id) }}</span>
+          @if (getUnreadCount(room.id) > 0) {
+          <span class="unread-badge">{{ getUnreadCount(room.id) }}</span>
+          }
+        </div>
+      </div>
+      } @empty {
+      <div class="empty-rooms">
+        <i class="material-icons">forum</i>
+        <p>No rooms available</p>
+        <button class="btn-accent">Create Room</button>
+      </div>
+      }
+    </div>
+  </aside>
+
+  <!-- Main chat area -->
+  <main class="chat-main">
+    @if (selectedRoom) {
+    <div class="chat-header">
+      <div class="room-info">
+        <h2>{{ selectedRoom.name }}</h2>
+        <p class="participants">{{ getParticipantsText(selectedRoom.id) }}</p>
+      </div>
+      <div class="chat-actions">
+        <button class="action-btn">
+          <i class="material-icons">search</i>
+        </button>
+        <button class="action-btn">
+          <i class="material-icons">more_vert</i>
+        </button>
+      </div>
+    </div>
+
+    <div class="messages-container">
+      @for (message of getMessages(selectedRoom.id); track message.id) {
+      <div class="message" [class.own-message]="isOwnMessage(message)">
+        <div class="message-avatar">
+          {{ message.sender.username.charAt(0).toUpperCase() }}
+        </div>
+        <div class="message-content">
+          <div class="message-header">
+            <span class="sender-name">{{ message.sender.username }}</span>
+            <span class="message-time">{{ formatMessageTime(message.timestamp) }}</span>
+          </div>
+          <p class="message-text">{{ message.text }}</p>
+        </div>
+      </div>
+      } @empty {
+      <div class="empty-messages">
+        <i class="material-icons">chat</i>
+        <p>No messages yet in this room</p>
+        <p class="prompt">Be the first to say something!</p>
+      </div>
+      }
+    </div>
+
+    <div class="message-input-container">
+      <button class="attachment-btn">
+        <i class="material-icons">attach_file</i>
+      </button>
+      <input type="text" class="message-input" placeholder="Type a message..." [(ngModel)]="newMessage"
+        (keyup.enter)="sendMessage()">
+      <button class="send-btn" (click)="sendMessage()">
+        <i class="material-icons">send</i>
+      </button>
+    </div>
+    } @else {
+    <div class="no-room-selected">
+      <div class="welcome-message">
+        <i class="material-icons">chat</i>
+        <h2>Welcome to ChatApp</h2>
+        <p>Select a room to start chatting or create a new one!</p>
+        <button class="btn-primary">Create a New Room</button>
+      </div>
+    </div>
+    }
+  </main>
+</div>

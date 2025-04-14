@@ -362,6 +362,19 @@
   }
 }
 
+.error-message {
+  color: #ff4d4d;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+
+  i {
+    font-size: 1rem;
+  }
+}
+
 .social-login {
   margin-top: 2rem;
 

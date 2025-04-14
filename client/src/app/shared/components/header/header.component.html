@@ -1,0 +1,20 @@
+<header class="home-header">
+  <div class="logo">
+    <span class="logo-icon">
+      <i class="material-icons">chat</i>
+    </span>
+    <h1 class="logo-text">ChatApp</h1>
+  </div>
+  <nav class="nav-links">
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#about" class="nav-link">About</a>
+
+    @if (!isLoggedIn) {
+    <a routerLink="/register"="nav-link highlight">Sign Up</a>
+    <a routerLink="/login" class="nav-link btn-login">Login</a>
+    } @else {
+    <a routerLink="/dashboard" href="/dashboard" class="nav-link">Chat Dashboard</a>
+    <button class="nav-link btn-logout" (click)="logout()">Logout</button>
+    }
+  </nav>
+</header>

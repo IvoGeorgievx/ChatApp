@@ -1,27 +1,23 @@
 <div class="home-container">
-  <header class="home-header">
-    <div class="logo">
-      <span class="logo-icon">
-        <i class="material-icons">chat</i>
-      </span>
-      <h1 class="logo-text">ChatApp</h1>
-    </div>
-    <nav class="nav-links">
-      <a href="#features" class="nav-link">Features</a>
-      <a href="#about" class="nav-link">About</a>
-      <a routerLink="/register" class="nav-link highlight">Sign Up</a>
-      <a routerLink="/login" class="nav-link btn-login">Login</a>
-    </nav>
-  </header>
-
+  <app-header />
   <section class="hero">
     <div class="hero-content">
       <h1 class="hero-title">Connect & Chat in Real-Time</h1>
-      <p class="hero-subtitle">Join conversations, create rooms, and chat instantly with friends around the world.</p>
+      <p class="hero-subtitle">
+        Join conversations, create rooms, and chat instantly with friends around
+        the world.
+      </p>
       <div class="cta-buttons">
-        <button routerLink="/register" class="btn btn-primary btn-get-started" (click)="scrollToRooms()">Get
-          Started</button>
+        @if (!isLoggedIn) {
+        <button routerLink="/register" class="btn btn-primary btn-get-started" (click)="scrollToRooms()">
+          Get Started
+        </button>
         <button routerLink="/login" class="btn btn-secondary">Login</button>
+        } @else {
+        <button routerLink="/chat" class="btn btn-primary btn-get-started">
+          Go to Chats
+        </button>
+        }
       </div>
     </div>
     <div class="hero-image">
@@ -73,8 +69,8 @@
       @for (room of featuredRooms; track room.id) {
       <div class="room-card">
         <div class="room-header">
-          <h3 class="room-name">{{room.name}}</h3>
-          <span class="room-members">{{room.members}} active</span>
+          <h3 class="room-name">{{ room.name }}</h3>
+          <span class="room-members">{{ room.members }} active</span>
         </div>
         <button class="btn btn-join">Join Room</button>
       </div>
@@ -84,7 +80,9 @@
           <h3 class="room-name">General</h3>
           <span class="room-members">24 active</span>
         </div>
-        <p class="room-description">Join our main chat room for general discussions</p>
+        <p class="room-description">
+          Join our main chat room for general discussions
+        </p>
         <button class="btn btn-join">Join Room</button>
       </div>
       <div class="room-card placeholder">
@@ -92,7 +90,9 @@
           <h3 class="room-name">Tech Talk</h3>
           <span class="room-members">12 active</span>
         </div>
-        <p class="room-description">Discuss the latest in technology and programming</p>
+        <p class="room-description">
+          Discuss the latest in technology and programming
+        </p>
         <button class="btn btn-join">Join Room</button>
       </div>
       }
