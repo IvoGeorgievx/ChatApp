@@ -3,7 +3,9 @@
 
 .dashboard-container {
   display: flex;
-  height: 100vh;
+  height: calc(
+    100vh - var(--header-height, 60px)
+  ); /* Adjust height to account for header */
   background-color: var(--background-color);
   color: white;
   font-family: "Roboto", sans-serif;
@@ -539,7 +541,7 @@
 @media (max-width: 768px) {
   .dashboard-container {
     flex-direction: column;
-    height: 100vh;
+    height: calc(100vh - var(--header-height, 60px));
   }
 
   .chat-sidebar {
