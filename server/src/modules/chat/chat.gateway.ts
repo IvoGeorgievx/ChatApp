@@ -76,6 +76,7 @@ export class ChatGateway
     @MessageBody() data: { roomId: string },
     @ConnectedSocket() client: Socket,
   ) {
+    console.log('asjdiajsd');
     const room = await this.chatService.findRoomById(data.roomId);
     await client.join(room.id);
     this.logger.log(`Client ${client.id} joined room ${room.id}`);

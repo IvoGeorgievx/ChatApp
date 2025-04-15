@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ChatRoom } from '../../types/chat.type';
 import { User } from '../../types/user.type';
 import { HeaderComponent } from '../header/header.component';
+import { ChatService } from '../../../core/services/chat/chat.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
 
 interface Message {
   id: string;
@@ -23,21 +25,28 @@ interface Message {
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit {
+  chatService = inject(ChatService);
+  authService = inject(AuthService);
+
   rooms: ChatRoom[] = [];
   filteredRooms: ChatRoom[] = [];
   selectedRoom: ChatRoom | null = null;
   roomSearchQuery: string = '';
 
-  currentUser: User = { id: '1', username: 'CurrentUser' }; // This would come from your auth service
+  currentUser: User | null | undefined = this.authService.currentUser();
 
   messages: Message[] = [];
   newMessage: string = '';
 
-  constructor() {}
-
   ngOnInit(): void {
-    this.loadMockData();
+    this.loadData();
     this.filterRooms();
+  }
+
+  loadData(): void {
+    this.chatService.getCurrentRooms().subscribe((data) => {
+      this.rooms = data;
+    });
   }
 
   filterRooms(): void {
@@ -47,16 +56,19 @@ export class DashboardComponent implements OnInit {
     }
 
     const query = this.roomSearchQuery.toLowerCase();
+
     this.filteredRooms = this.rooms.filter((room) =>
       room.name.toLowerCase().includes(query)
     );
   }
 
   selectRoom(room: ChatRoom): void {
+    console.log(room);
+    this.chatService.joinRoom(room.id);
     this.selectedRoom = room;
 
     this.messages.forEach((msg) => {
-      if (msg.roomId === room.id && msg.sender.id !== this.currentUser.id) {
+      if (msg.roomId === room.id && msg.sender.id !== this.currentUser?.id) {
         msg.read = true;
       }
     });
@@ -73,7 +85,7 @@ export class DashboardComponent implements OnInit {
       id: Date.now().toString(),
       text: this.newMessage,
       timestamp: new Date(),
-      sender: this.currentUser,
+      sender: this.currentUser!,
       roomId: this.selectedRoom.id,
       read: true,
     };
@@ -112,12 +124,12 @@ export class DashboardComponent implements OnInit {
       (msg) =>
         msg.roomId === roomId &&
         !msg.read &&
-        msg.sender.id !== this.currentUser.id
+        msg.sender.id !== this.currentUser?.id
     ).length;
   }
 
   isOwnMessage(message: Message): boolean {
-    return message.sender.id === this.currentUser.id;
+    return message.sender.id === this.currentUser?.id;
   }
 
   formatMessageTime(date: Date): string {

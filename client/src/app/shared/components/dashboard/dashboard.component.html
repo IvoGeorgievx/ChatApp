@@ -15,7 +15,7 @@
     </div>
 
     <div class="rooms-list">
-      @for (room of filteredRooms; track room.id) {
+      @for (room of rooms; track room.id) {
       <div class="room-item" [class.active]="selectedRoom?.id === room.id" (click)="selectRoom(room)">
         <div class="room-avatar">
           {{ room.name.charAt(0).toUpperCase() }}

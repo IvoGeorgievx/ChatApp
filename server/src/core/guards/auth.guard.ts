@@ -24,6 +24,7 @@ export class AuthGuard implements CanActivate {
       console.log('into the ws');
       const client: Socket = context.switchToWs().getClient();
       const cookie = client.handshake.headers.cookie;
+      console.log(cookie);
       const token = cookie?.split('=')[1];
       if (!token) {
         client.emit('auth_error', {
