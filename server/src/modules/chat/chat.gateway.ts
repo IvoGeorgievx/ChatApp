@@ -70,19 +70,18 @@ export class ChatGateway
     return this.chatService.createRoom(parsed.data);
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @SubscribeMessage('joinRoom')
   async joinRoom(
     @MessageBody() data: { roomId: string },
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('asjdiajsd');
     const room = await this.chatService.findRoomById(data.roomId);
     await client.join(room.id);
     this.logger.log(`Client ${client.id} joined room ${room.id}`);
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @SubscribeMessage('newMessage')
   async receiveMessage(@MessageBody() body: CreateMessageDto) {
     const parsed = messageSchema.safeParse(body);

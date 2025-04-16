@@ -67,6 +67,18 @@ export class ChatService {
   }
 
   async getAllChatRooms(): Promise<ChatRoom[]> {
-    return await this.chatRoomRepo.find();
+    return await this.chatRoomRepo.find({
+      relations: {
+        messages: true,
+      },
+    });
   }
+
+  // async getChatMessages(roomId: string): Promise<ChatRoom[]> {
+  //   return await this.chatRoomRepo.find({
+  //     where: {
+  //       id: roomId,
+  //     },
+  //   });
+  // }
 }

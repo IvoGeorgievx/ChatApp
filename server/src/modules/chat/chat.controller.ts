@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ChatService } from './chat.service';
 
 @Controller('chats')
@@ -9,4 +9,9 @@ export class ChatController {
   getAllChatRooms() {
     return this.chatService.getAllChatRooms();
   }
+
+  // @Get(':id')
+  // getRoomMessage(@Param('id') id: string) {
+  //   return this.chatService.getChatMessages(id);
+  // }
 }

@@ -2,20 +2,12 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { ChatRoom } from '../../types/chat.type';
+import { ChatRoom, Message } from '../../types/chat.type';
 import { User } from '../../types/user.type';
 import { HeaderComponent } from '../header/header.component';
 import { ChatService } from '../../../core/services/chat/chat.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
-
-interface Message {
-  id: string;
-  text: string;
-  timestamp: Date;
-  sender: User;
-  roomId: string;
-  read: boolean;
-}
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -39,14 +31,25 @@ export class DashboardComponent implements OnInit {
   newMessage: string = '';
 
   ngOnInit(): void {
-    this.loadData();
+    this.loadRooms();
     this.filterRooms();
+    // this.loadMessages();
   }
 
-  loadData(): void {
-    this.chatService.getCurrentRooms().subscribe((data) => {
-      this.rooms = data;
-    });
+  loadRooms(): void {
+    this.chatService
+      .getCurrentRooms()
+      .pipe(
+        tap((data: ChatRoom[]) =>
+          data.forEach((room) => {
+            this.messages.push(...room.messages);
+          })
+        )
+      )
+      .subscribe((data) => {
+        this.rooms = data;
+        console.log(this.messages);
+      });
   }
 
   filterRooms(): void {
@@ -67,11 +70,11 @@ export class DashboardComponent implements OnInit {
     this.chatService.joinRoom(room.id);
     this.selectedRoom = room;
 
-    this.messages.forEach((msg) => {
-      if (msg.roomId === room.id && msg.sender.id !== this.currentUser?.id) {
-        msg.read = true;
-      }
-    });
+    // this.messages.forEach((msg) => {
+    //   if (msg.roomId === room.id && msg.sender.id !== this.currentUser?.id) {
+    //     msg.read = true;
+    //   }
+    // });
   }
 
   getMessages(roomId: string): Message[] {
@@ -80,14 +83,13 @@ export class DashboardComponent implements OnInit {
 
   sendMessage(): void {
     if (!this.newMessage.trim() || !this.selectedRoom) return;
+    this.chatService.sendMessage(this.newMessage, this.selectedRoom);
 
     const newMsg: Message = {
-      id: Date.now().toString(),
-      text: this.newMessage,
-      timestamp: new Date(),
-      sender: this.currentUser!,
+      // id: Date.now().toString(),
+      content: this.newMessage,
       roomId: this.selectedRoom.id,
-      read: true,
+      sender: this.currentUser!,
     };
 
     this.messages.push(newMsg);
@@ -95,42 +97,42 @@ export class DashboardComponent implements OnInit {
   }
 
   // Helper methods for UI
-  getLastMessage(roomId: string): string {
-    const roomMessages = this.messages
-      .filter((msg) => msg.roomId === roomId)
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  // getLastMessage(roomId: string): string {
+  //   const roomMessages = this.messages
+  //     .filter((msg) => msg.roomId === roomId)
+  //     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
-    if (roomMessages.length === 0) return 'No messages yet';
+  //   if (roomMessages.length === 0) return 'No messages yet';
 
-    const lastMsg = roomMessages[0];
-    return lastMsg.text.length > 30
-      ? lastMsg.text.substring(0, 27) + '...'
-      : lastMsg.text;
-  }
+  //   const lastMsg = roomMessages[0];
+  //   return lastMsg.text.length > 30
+  //     ? lastMsg.text.substring(0, 27) + '...'
+  //     : lastMsg.text;
+  // }
 
-  getLastMessageTime(roomId: string): string {
-    const roomMessages = this.messages
-      .filter((msg) => msg.roomId === roomId)
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  // getLastMessageTime(roomId: string): string {
+  //   const roomMessages = this.messages
+  //     .filter((msg) => msg.roomId === roomId)
+  //     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
-    if (roomMessages.length === 0) return '';
+  //   if (roomMessages.length === 0) return '';
 
-    const lastMsg = roomMessages[0];
-    return this.formatMessageTime(lastMsg.timestamp);
-  }
+  //   const lastMsg = roomMessages[0];
+  //   return this.formatMessageTime(lastMsg.timestamp);
+  // }
 
-  getUnreadCount(roomId: string): number {
-    return this.messages.filter(
-      (msg) =>
-        msg.roomId === roomId &&
-        !msg.read &&
-        msg.sender.id !== this.currentUser?.id
-    ).length;
-  }
+  // getUnreadCount(roomId: string): number {
+  //   return this.messages.filter(
+  //     (msg) =>
+  //       msg.roomId === roomId &&
+  //       !msg.read &&
+  //       msg.sender.id !== this.currentUser?.id
+  //   ).length;
+  // }
 
-  isOwnMessage(message: Message): boolean {
-    return message.sender.id === this.currentUser?.id;
-  }
+  // isOwnMessage(message: Message): boolean {
+  //   return message.sender.id === this.currentUser?.id;
+  // }
 
   formatMessageTime(date: Date): string {
     const now = new Date();
@@ -159,63 +161,5 @@ export class DashboardComponent implements OnInit {
     };
 
     return counts[roomId as keyof typeof counts] || 'No participants';
-  }
-
-  private loadMockData(): void {
-    this.rooms = [
-      { id: '1', name: 'General Chat' },
-      { id: '2', name: 'Development Team' },
-      { id: '3', name: 'Design Discussion' },
-      { id: '4', name: 'Project Planning' },
-    ];
-
-    const users: User[] = [
-      { id: '1', username: 'CurrentUser' },
-      { id: '2', username: 'JaneDoe' },
-      { id: '3', username: 'BobSmith' },
-    ];
-
-    this.messages = [
-      {
-        id: '1',
-        roomId: '1',
-        sender: users[1],
-        text: 'Hey everyone! Welcome to the general chat.',
-        timestamp: new Date(Date.now() - 3600000 * 2),
-        read: false,
-      },
-      {
-        id: '2',
-        roomId: '1',
-        sender: users[2],
-        text: 'Thanks for setting this up!',
-        timestamp: new Date(Date.now() - 3600000),
-        read: false,
-      },
-      {
-        id: '3',
-        roomId: '2',
-        sender: users[1],
-        text: "What's the status on the new feature?",
-        timestamp: new Date(Date.now() - 86400000),
-        read: true,
-      },
-      {
-        id: '4',
-        roomId: '2',
-        sender: users[0],
-        text: "I'm working on it now, should be done by tomorrow.",
-        timestamp: new Date(Date.now() - 86400000 + 3600000),
-        read: true,
-      },
-      {
-        id: '5',
-        roomId: '3',
-        sender: users[2],
-        text: "I've uploaded the new mockups for review.",
-        timestamp: new Date(Date.now() - 172800000),
-        read: true,
-      },
-    ];
   }
 }
