@@ -59,19 +59,19 @@
       </div>
     </div>
 
-    <div class="messages-container">
+    <div class="messages-container" #messagesContainer>
       @for (message of getMessages(selectedRoom.id); track message.id) {
-      <!-- <div class="message" [class.own-message]="isOwnMessage(message)"> -->
-      <div class="message-avatar">
-        <!-- {{ message.sender.username.charAt(0).toUpperCase() }} -->
-      </div>
-      <div class="message-content">
-        <div class="message-header">
-          <!-- <span class="sender-name">{{ message.sender.username }}</span> -->
-          <!-- <span class="message-time">{{ formatMessageTime(message.timestamp) }}</span> -->
+      <div class="message" [class.own-message]="isOwnMessage(message)">
+        <div class="message-avatar">
+          {{ message.sender.username.charAt(0).toUpperCase() }}
         </div>
-        <!-- <p class="message-text">{{ message.text }}</p> -->
-        <!-- </div> -->
+        <div class="message-content">
+          <div class="message-header">
+            <span class="sender-name">{{ message.sender.username }}</span>
+            <!-- <span class="message-time">{{ formatMessageTime(message.) }}</span> -->
+          </div>
+          <p class="message-text">{{ message.content }}</p>
+        </div>
       </div>
       } @empty {
       <div class="empty-messages">

@@ -1,4 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  ElementRef,
+  inject,
+  OnInit,
+  viewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -7,7 +14,7 @@ import { User } from '../../types/user.type';
 import { HeaderComponent } from '../header/header.component';
 import { ChatService } from '../../../core/services/chat/chat.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
-import { tap } from 'rxjs';
+import { Subscription, tap } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,7 +23,7 @@ import { tap } from 'rxjs';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, AfterViewChecked {
   chatService = inject(ChatService);
   authService = inject(AuthService);
 
@@ -25,15 +32,37 @@ export class DashboardComponent implements OnInit {
   selectedRoom: ChatRoom | null = null;
   roomSearchQuery: string = '';
 
+  messageContainer = viewChild<ElementRef<HTMLDivElement>>('messagesContainer');
+
   currentUser: User | null | undefined = this.authService.currentUser();
 
   messages: Message[] = [];
   newMessage: string = '';
+  messageSubscription: Subscription | null = null;
 
   ngOnInit(): void {
     this.loadRooms();
     this.filterRooms();
-    // this.loadMessages();
+
+    this.messageSubscription = this.chatService
+      .recieveMessage()
+      .subscribe((message: Message) => {
+        const roomToPushMessage = this.rooms.find(
+          (room) => room.id === this.selectedRoom?.id
+        );
+        roomToPushMessage?.messages.push(message);
+      });
+  }
+
+  ngAfterViewChecked(): void {
+    this.scrollToBottom();
+  }
+
+  private scrollToBottom(): void {
+    const container = this.messageContainer();
+    if (container && container.nativeElement) {
+      container.nativeElement.scrollTop = container.nativeElement.scrollHeight;
+    }
   }
 
   loadRooms(): void {
@@ -48,7 +77,6 @@ export class DashboardComponent implements OnInit {
       )
       .subscribe((data) => {
         this.rooms = data;
-        console.log(this.messages);
       });
   }
 
@@ -78,7 +106,11 @@ export class DashboardComponent implements OnInit {
   }
 
   getMessages(roomId: string): Message[] {
-    return this.messages.filter((msg) => msg.roomId === roomId);
+    const room = this.rooms.find((room) => room.id === roomId);
+    const messages = room?.messages.sort((a: Message, b: Message) => {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+    return messages ? messages : [];
   }
 
   sendMessage(): void {
@@ -90,6 +122,7 @@ export class DashboardComponent implements OnInit {
       content: this.newMessage,
       roomId: this.selectedRoom.id,
       sender: this.currentUser!,
+      createdAt: new Date(),
     };
 
     this.messages.push(newMsg);
@@ -130,9 +163,11 @@ export class DashboardComponent implements OnInit {
   //   ).length;
   // }
 
-  // isOwnMessage(message: Message): boolean {
-  //   return message.sender.id === this.currentUser?.id;
-  // }
+  isOwnMessage(message: Message): boolean {
+    console.log(message.sender.id);
+    console.log(this.currentUser);
+    return message.sender.id === this.currentUser?.id;
+  }
 
   formatMessageTime(date: Date): string {
     const now = new Date();

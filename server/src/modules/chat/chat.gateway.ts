@@ -15,6 +15,10 @@ import { ChatService } from './chat.service';
 import { ChatRoomDto, chatRoomSchema } from './dto/chat-room.dto';
 import { CreateMessageDto, messageSchema } from './dto/message.dto';
 
+interface SocketData {
+  username: string;
+  userId: string;
+}
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -37,13 +41,13 @@ export class ChatGateway
   }
 
   handleConnection(client: Socket) {
-    const token = client.handshake.headers['authorization']?.split(' ')[1];
+    const token = client.handshake.headers.cookie?.split('=')[1];
     if (!token) return;
     const user = this.jwtService.verify<{ sub: string; username: string }>(
       token,
     );
     if (user) {
-      client.data = { userId: user.sub, username: user.username };
+      client.data = { userId: user.sub, username: user.username } as SocketData;
       this.logger.log(
         `User ${user.sub} - ${user.username} connected with socket ID ${client.id}`,
       );
@@ -76,20 +80,25 @@ export class ChatGateway
     @MessageBody() data: { roomId: string },
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = (client.data as SocketData).userId;
     const room = await this.chatService.findRoomById(data.roomId);
     await client.join(room.id);
-    this.logger.log(`Client ${client.id} joined room ${room.id}`);
+    this.logger.log(`User with id ${userId} joined room ${room.id}`);
   }
 
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @SubscribeMessage('newMessage')
-  async receiveMessage(@MessageBody() body: CreateMessageDto) {
+  async receiveMessage(
+    @MessageBody() body: CreateMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const user = client.data as SocketData;
     const parsed = messageSchema.safeParse(body);
     if (!parsed.success) {
       this.logger.error('Invalid message data', parsed.error.errors);
       //same
     }
-    const message = await this.chatService.newMessage(body);
-    this.server.to(message.chatRoom.id).emit('message', message.content);
+    const message = await this.chatService.newMessage(body, user.userId);
+    this.server.to(message.chatRoom.id).emit('message', message);
   }
 }

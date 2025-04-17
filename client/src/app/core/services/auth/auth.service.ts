@@ -65,7 +65,7 @@ export class AuthService {
 
       if (!isExpired) {
         this.currentUserSignal.set({
-          id: decodedToken.userId,
+          id: decodedToken.sub ?? '',
           username: decodedToken.username,
         });
       } else {

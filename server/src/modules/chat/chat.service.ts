@@ -30,8 +30,18 @@ export class ChatService {
     }
   }
 
-  async newMessage(body: CreateMessageDto): Promise<Message> {
+  async newMessage(body: CreateMessageDto, userId: string): Promise<Message> {
     const { roomId, content } = body;
+
+    const sender = await this.userRepo.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!sender) {
+      throw new BadRequestException('Sender not found');
+    }
 
     const chatRoom = await this.chatRoomRepo.findOne({ where: { id: roomId } });
     if (!chatRoom) {
@@ -41,14 +51,17 @@ export class ChatService {
     const newMessage = this.messageRepo.create({
       content,
       chatRoom,
+      sender,
     });
 
     try {
       return await this.messageRepo.save(newMessage);
-    } catch (err) {
-      console.log('error bro');
-      throw new Error(err);
-      // emit smt
+    } catch (err: unknown) {
+      console.error('Error during message save:', err);
+      if (err instanceof Error) {
+        throw new BadRequestException(err.message);
+      }
+      throw new BadRequestException('An unknown error occurred');
     }
   }
 

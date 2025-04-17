@@ -1,11 +1,17 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ChatRoom } from '../../../shared/types/chat.type';
+import { ChatRoom, Message } from '../../../shared/types/chat.type';
 import { Socket, SocketIoConfig } from 'ngx-socket-io';
 import { CookieService } from 'ngx-cookie-service';
 
-const config: SocketIoConfig = { url: 'http://localhost:3005', options: {} };
+const config: SocketIoConfig = {
+  url: 'http://localhost:3005',
+  options: {
+    withCredentials: true,
+    transports: ['websocket'],
+  },
+};
 
 @Injectable({
   providedIn: 'root',
@@ -33,6 +39,10 @@ export class ChatService {
     return this.socket.on('auth_error', (msg) => {
       console.error(msg);
     });
+  }
+
+  recieveMessage(): Observable<Message> {
+    return this.socket.fromEvent<Message, 'message'>('message');
   }
 
   sendMessage(text: string, room: ChatRoom): void {

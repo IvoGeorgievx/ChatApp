@@ -5,6 +5,7 @@ export interface Message {
   content: string;
   sender: User;
   roomId: string;
+  createdAt: Date;
 }
 
 export interface ChatRoom {
