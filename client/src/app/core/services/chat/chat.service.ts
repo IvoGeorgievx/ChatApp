@@ -35,6 +35,10 @@ export class ChatService {
     this.socket.emit('joinRoom', { roomId });
   }
 
+  createRoom(name: string): void {
+    this.socket.emit('newRoom', { name });
+  }
+
   authError() {
     return this.socket.on('auth_error', (msg) => {
       console.error(msg);
@@ -43,6 +47,10 @@ export class ChatService {
 
   recieveMessage(): Observable<Message> {
     return this.socket.fromEvent<Message, 'message'>('message');
+  }
+
+  roomCreated(): Observable<ChatRoom> {
+    return this.socket.fromEvent<ChatRoom, 'roomCreated'>('roomCreated');
   }
 
   sendMessage(text: string, room: ChatRoom): void {

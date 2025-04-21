@@ -4,18 +4,18 @@
   <aside class="chat-sidebar">
     <div class="sidebar-header">
       <h2>Chat Rooms</h2>
-      <button class="btn-create-room">
+      <button class="btn-create-room" (click)="openRoomModal()">
         <i class="material-icons">add</i>
       </button>
     </div>
 
     <div class="room-search">
-      <input type="text" placeholder="Search rooms..." [(ngModel)]="roomSearchQuery">
+      <input type="text" placeholder="Search rooms..." [(ngModel)]="roomSearchQuery" (ngModelChange)="filterRooms()">
       <i class="material-icons search-icon">search</i>
     </div>
 
     <div class="rooms-list">
-      @for (room of rooms; track room.id) {
+      @for (room of filteredRooms; track room.id) {
       <div class="room-item" [class.active]="selectedRoom?.id === room.id" (click)="selectRoom(room)">
         <div class="room-avatar">
           {{ room.name.charAt(0).toUpperCase() }}
@@ -98,9 +98,19 @@
         <i class="material-icons">chat</i>
         <h2>Welcome to ChatApp</h2>
         <p>Select a room to start chatting or create a new one!</p>
-        <button class="btn-primary">Create a New Room</button>
+        <button class="btn-primary" (click)="openRoomModal()">Create a New Room</button>
       </div>
     </div>
     }
+    <div class="modal-backdrop" [class.hidden]="modalDialogIsHidden" (click)="closeModal()"></div>
+    <div class="modal-dialog" [class.hidden]="modalDialogIsHidden">
+      <button class="modal-close-btn" (click)="closeModal()">
+        <i class="material-icons">close</i>
+      </button>
+      <!-- Bind input to newRoomName using ngModel -->
+      <input type="text" placeholder="Enter Room Name" [(ngModel)]="newRoomName" (keyup.enter)="createRoom()">
+      <!-- Bind button click to createRoom method -->
+      <button class="btn-primary" (click)="createRoom()">Create Room</button>
+    </div>
   </main>
 </div>

@@ -63,7 +63,7 @@ export class ChatGateway
 
   @UseGuards(AuthGuard)
   @SubscribeMessage('newRoom')
-  createRoom(@MessageBody() body: ChatRoomDto) {
+  async createRoom(@MessageBody() body: ChatRoomDto) {
     const parsed = chatRoomSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -71,7 +71,12 @@ export class ChatGateway
       // emit something for the error
       return;
     }
-    return this.chatService.createRoom(parsed.data);
+    try {
+      const createdRoom = await this.chatService.createRoom(parsed.data);
+      this.server.emit('roomCreated', createdRoom);
+    } catch {
+      this.logger.error('Couldn`t create room');
+    }
   }
 
   // @UseGuards(AuthGuard)

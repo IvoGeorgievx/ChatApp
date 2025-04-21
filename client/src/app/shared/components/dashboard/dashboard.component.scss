@@ -37,6 +37,7 @@
       var(--accent-color)
     );
     -webkit-background-clip: text;
+    background-clip: text; /* Standard property */
     -webkit-text-fill-color: transparent;
     margin: 0;
   }
@@ -535,6 +536,116 @@
       }
     }
   }
+}
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(18, 18, 18, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 9998;
+}
+
+.modal-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 400px;
+  min-height: 250px;
+  background: rgba(var(--background-color-rgb), 0.98);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  padding: 2rem 1.5rem;
+  z-index: 9999;
+  animation: modal-pop 0.25s cubic-bezier(0.4, 0.7, 0.4, 1.2);
+  color: var(--text-color);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+
+  i {
+    font-size: 1.3rem;
+  }
+}
+
+@keyframes modal-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.modal-dialog input[type="text"] {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-color);
+  font-size: 1rem;
+  margin-bottom: 1.2rem;
+  outline: none;
+  transition: border 0.2s, background-color 0.2s;
+}
+
+.modal-dialog input[type="text"]:focus {
+  border-color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-dialog .btn-primary {
+  width: 100%;
+  margin-top: 0.5rem;
+  font-size: 1rem; /* Adjusted font size */
+  letter-spacing: 0.5px;
+  background-color: var(--primary-color); /* Use primary color */
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px; /* Match other primary buttons */
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: #4caf50; /* Darker shade of primary */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(27, 94, 32, 0.3); /* Consistent shadow */
+  }
+}
+
+.hidden {
+  display: none;
 }
 
 /* Responsive adjustments */

@@ -33,12 +33,15 @@ export class DashboardComponent implements OnInit, AfterViewChecked {
   roomSearchQuery: string = '';
 
   messageContainer = viewChild<ElementRef<HTMLDivElement>>('messagesContainer');
+  modalDialogIsHidden = true;
 
   currentUser: User | null | undefined = this.authService.currentUser();
 
   messages: Message[] = [];
   newMessage: string = '';
+  newRoomName: string = '';
   messageSubscription: Subscription | null = null;
+  roomCreation: Subscription | null = null;
 
   ngOnInit(): void {
     this.loadRooms();
@@ -51,6 +54,12 @@ export class DashboardComponent implements OnInit, AfterViewChecked {
           (room) => room.id === this.selectedRoom?.id
         );
         roomToPushMessage?.messages.push(message);
+      });
+
+    this.roomCreation = this.chatService
+      .roomCreated()
+      .subscribe((room: ChatRoom) => {
+        this.filteredRooms.push(room);
       });
   }
 
@@ -77,7 +86,26 @@ export class DashboardComponent implements OnInit, AfterViewChecked {
       )
       .subscribe((data) => {
         this.rooms = data;
+        this.filteredRooms = this.rooms;
       });
+  }
+
+  openRoomModal(): void {
+    this.modalDialogIsHidden = false;
+  }
+
+  createRoom(): void {
+    if (!this.newRoomName.trim()) {
+      console.error('Room name cannot be empty');
+      return;
+    }
+    this.chatService.createRoom(this.newRoomName);
+    this.newRoomName = '';
+    this.closeModal();
+  }
+
+  closeModal(): void {
+    this.modalDialogIsHidden = true;
   }
 
   filterRooms(): void {
@@ -85,6 +113,7 @@ export class DashboardComponent implements OnInit, AfterViewChecked {
       this.filteredRooms = [...this.rooms];
       return;
     }
+    console.log('filter rooms');
 
     const query = this.roomSearchQuery.toLowerCase();
 
