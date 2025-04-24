@@ -22,13 +22,9 @@
         </div>
         <div class="room-info">
           <h3 class="room-name">{{ room.name }}</h3>
-          <!-- <p class="room-last-message">{{ getLastMessage(room.id) }}</p> -->
         </div>
         <div class="room-meta">
-          <!-- <span class="room-time">{{ getLastMessageTime(room.id) }}</span>
-          @if (getUnreadCount(room.id) > 0) {
-          <span class="unread-badge">{{ getUnreadCount(room.id) }}</span> -->
-          <!-- } -->
+
         </div>
       </div>
       } @empty {
@@ -41,7 +37,6 @@
     </div>
   </aside>
 
-  <!-- Main chat area -->
   <main class="chat-main">
     @if (selectedRoom) {
     <div class="chat-header">
@@ -68,7 +63,6 @@
         <div class="message-content">
           <div class="message-header">
             <span class="sender-name">{{ message.sender.username }}</span>
-            <!-- <span class="message-time">{{ formatMessageTime(message.) }}</span> -->
           </div>
           <p class="message-text">{{ message.content }}</p>
         </div>
@@ -107,9 +101,8 @@
       <button class="modal-close-btn" (click)="closeModal()">
         <i class="material-icons">close</i>
       </button>
-      <!-- Bind input to newRoomName using ngModel -->
-      <input type="text" placeholder="Enter Room Name" [(ngModel)]="newRoomName" (keyup.enter)="createRoom()">
-      <!-- Bind button click to createRoom method -->
+      <input type="text" #roomNameInput placeholder="Enter Room Name" [(ngModel)]="newRoomName"
+        (keyup.enter)="createRoom()">
       <button class="btn-primary" (click)="createRoom()">Create Room</button>
     </div>
   </main>

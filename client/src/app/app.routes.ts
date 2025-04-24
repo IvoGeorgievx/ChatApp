@@ -23,4 +23,9 @@ export const routes: Routes = [
     component: DashboardComponent,
     canActivate: [AuthGuard],
   },
+  {
+    path: 'dashboard/:roomId',
+    component: DashboardComponent,
+    canActivate: [AuthGuard],
+  },
 ];

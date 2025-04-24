@@ -14,7 +14,7 @@
         </button>
         <button routerLink="/login" class="btn btn-secondary">Login</button>
         } @else {
-        <button routerLink="/chat" class="btn btn-primary btn-get-started">
+        <button routerLink="/dashboard" class="btn btn-primary btn-get-started">
           Go to Chats
         </button>
         }
@@ -70,9 +70,9 @@
       <div class="room-card">
         <div class="room-header">
           <h3 class="room-name">{{ room.name }}</h3>
-          <span class="room-members">{{ room.members }} active</span>
+          <!-- <span class="room-members">{{ room.members }} active</span> -->
         </div>
-        <button class="btn btn-join">Join Room</button>
+        <button class="btn btn-join" (click)="handleJoinRoom(room.id)">Join Room</button>
       </div>
       } @empty {
       <div class="room-card placeholder">

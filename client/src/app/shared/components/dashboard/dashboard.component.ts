@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ChatRoom, Message } from '../../types/chat.type';
 import { User } from '../../types/user.type';
 import { HeaderComponent } from '../header/header.component';
@@ -26,13 +26,16 @@ import { Subscription, tap } from 'rxjs';
 export class DashboardComponent implements OnInit, AfterViewChecked {
   chatService = inject(ChatService);
   authService = inject(AuthService);
+  route = inject(ActivatedRoute);
 
+  roomId: string | null = null;
   rooms: ChatRoom[] = [];
   filteredRooms: ChatRoom[] = [];
   selectedRoom: ChatRoom | null = null;
   roomSearchQuery: string = '';
 
   messageContainer = viewChild<ElementRef<HTMLDivElement>>('messagesContainer');
+  roomNameInput = viewChild<ElementRef<HTMLInputElement>>('roomNameInput');
   modalDialogIsHidden = true;
 
   currentUser: User | null | undefined = this.authService.currentUser();
@@ -74,6 +77,16 @@ export class DashboardComponent implements OnInit, AfterViewChecked {
     }
   }
 
+  private handleRoomSelection() {
+    this.roomId = this.route.snapshot.paramMap.get('roomId');
+    if (!this.roomId) return;
+
+    const room = this.rooms.find((room) => room.id === this.roomId);
+    if (!room) return;
+
+    return this.selectRoom(room);
+  }
+
   loadRooms(): void {
     this.chatService
       .getCurrentRooms()
@@ -87,11 +100,15 @@ export class DashboardComponent implements OnInit, AfterViewChecked {
       .subscribe((data) => {
         this.rooms = data;
         this.filteredRooms = this.rooms;
+        this.handleRoomSelection();
       });
   }
 
   openRoomModal(): void {
     this.modalDialogIsHidden = false;
+    setTimeout(() => {
+      this.roomNameInput()?.nativeElement.focus();
+    });
   }
 
   createRoom(): void {
@@ -113,7 +130,6 @@ export class DashboardComponent implements OnInit, AfterViewChecked {
       this.filteredRooms = [...this.rooms];
       return;
     }
-    console.log('filter rooms');
 
     const query = this.roomSearchQuery.toLowerCase();
 
@@ -126,12 +142,6 @@ export class DashboardComponent implements OnInit, AfterViewChecked {
     console.log(room);
     this.chatService.joinRoom(room.id);
     this.selectedRoom = room;
-
-    // this.messages.forEach((msg) => {
-    //   if (msg.roomId === room.id && msg.sender.id !== this.currentUser?.id) {
-    //     msg.read = true;
-    //   }
-    // });
   }
 
   getMessages(roomId: string): Message[] {
